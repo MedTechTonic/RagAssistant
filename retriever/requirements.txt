@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+psycopg2-binary
+langchain
+sentence-transformers
+langchain-community
+numpy
+wheel
+setuptools

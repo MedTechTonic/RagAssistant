@@ -1,0 +1,27 @@
+llm:
+  model_name: "gpt-3.5-turbo"
+  temperature: 0.2
+  prompt: "You are a medical assistant. Answer the following question:"
+
+database:
+  user: "user"
+  password: "password"
+  host: "localhost"
+  port: 5432
+  name: "postgres"
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+
+embedding_model:
+  batch_size: 16
+  model_name: "dunzhang/stella_en_400M_v5"
+  model_type: ""
+  dimension: 1024
+  prefix_query: "query: {}"
+  prefix_document: "passage: {}"
+
+retrieval:
+  top_k: 3
+  similarity_threshold: 0.75

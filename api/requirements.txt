@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+langchain
+pgvector
+pandas
+pyyaml
+langchain-community
+httpx
+psycopg2-binary
+openai
+pyarrow
+fastparquet
+pandas
+numpy
+tqdm
+SQLAlchemy==2.0.32
+sqlparse==0.5.1
