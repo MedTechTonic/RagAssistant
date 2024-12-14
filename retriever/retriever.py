@@ -44,11 +44,10 @@ async def similarity_search(query: Query):
 
         # Build a SQL query to compute cosine similarity
         sql = text(f"""
-        SELECT id, content, embedding <=> (:query_embedding)::vector AS similarity
-        FROM documents
-        ORDER BY similarity
-        LIMIT :top_k;
-
+            SELECT id, content, embedding <=> (:query_embedding)::vector AS similarity
+            FROM documents
+            ORDER BY similarity
+            LIMIT :top_k;
         """)
 
         # Execute the query
