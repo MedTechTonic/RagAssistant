@@ -3,10 +3,9 @@ import httpx
 import logging
 import models, schemas
 from fastapi import FastAPI
-from langchain.chat_models import ChatOpenAI
 from contextlib import asynccontextmanager
 from database import engine
-from utils import initialize_database
+from utils import initialize_database, initialize_llm_client, retrieve_embeddings
 from sqlalchemy.sql import text
 import os
 
@@ -33,29 +32,28 @@ async def lifespan(app: FastAPI):
     logger.info("App shutting down")
 
 app = FastAPI(lifespan=lifespan)
-
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-logging.info(os.getenv("OPENAI_API_KEY"))
-llm = ChatOpenAI(model_name=config['llm']['model_name'], temperature=config['llm']['temperature'])
-
-async def fetch_similarity_search(query: str):
-    retriever_url = f"http://retriever:8001/similarity_search"
-    async with httpx.AsyncClient() as client:
-        response = await client.post(retriever_url, json={"query": query})
-        response.raise_for_status()
-        return response.json()
+llm = initialize_llm_client(config)
 
 @app.post("/query/")
 async def query(query: str):
     try:
-        answer = []
-        context = await fetch_similarity_search(query)
-        async for chunk in llm.astream(
-            prompt=config["llm"]["prompt"],
-            messages=[{"role": "user", "content": f"Context:\n{context}\nQuery:\n{query}"}]
-        ):
-            answer.append(chunk)
-        return {"response": answer}
+        context_json = await retrieve_embeddings(query)
+        context = '\n'.join([content["content"] for content in context_json])
+        response = llm.chat.completions.create(
+                model=config["llm"]["model"],
+                messages=[
+                    {"role": "system", "content": config["llm"]["system_prompt"]},
+                    {"role": "user", "content": f"{context}\n{query}"},
+                ],
+                temperature=config["llm"]["temperature"],
+                stream=True,
+            )
+
+        generated_response = ""
+        for chunk in response:
+            if chunk.choices[0].delta.content is not None:
+                generated_response += chunk.choices[0].delta.content
+        return {"context": context, "response": generated_response}
     except Exception as e:
         logger.error(f"An error occurred while processing the query: {e}")
         return {"error": "An error occurred while processing your request."}

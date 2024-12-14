@@ -1,5 +1,8 @@
 import numpy as np
+import os
+import httpx
 import pandas as pd
+from openai import OpenAI
 from sqlalchemy import select
 from tqdm import tqdm
 from database import SessionLocal
@@ -9,6 +12,24 @@ import logging
 # Initialize logger
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+def initialize_llm_client(config):
+    try:
+        llm_client = OpenAI(
+            base_url=config["llm"]["base_url"], api_key=os.environ["API_KEY"]
+        )
+        logger.info("LLM client initialized successfully.")
+        return llm_client
+    except Exception as e:
+        logger.error(f"Failed to initialize LLM client: {e}")
+        raise
+
+async def retrieve_embeddings(query: str):
+    retriever_url = f"http://{config['retriever']['host']}:{config['retriever']['port']}/similarity_search"
+    async with httpx.AsyncClient() as client:
+        response = await client.post(retriever_url, json={"query": query}, timeout=10.0)
+        response.raise_for_status()
+        return response.json()
 
 def insert_embeddings_from_parquet(file_path_parquet, file_path_npy, batch_size=1000):
     session = SessionLocal()
