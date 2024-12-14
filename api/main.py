@@ -37,7 +37,7 @@ llm = initialize_llm_client(config)
 @app.post("/query/")
 async def query(query: str):
     try:
-        context_json = await retrieve_embeddings(query)
+        context_json = await retrieve_embeddings(query, config)
         context = '\n'.join([content["content"] for content in context_json])
         response = llm.chat.completions.create(
                 model=config["llm"]["model"],

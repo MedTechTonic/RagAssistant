@@ -24,8 +24,8 @@ def initialize_llm_client(config):
         logger.error(f"Failed to initialize LLM client: {e}")
         raise
 
-async def retrieve_embeddings(query: str):
-    retriever_url = f"http://{config['retriever']['host']}:{config['retriever']['port']}/similarity_search"
+async def retrieve_embeddings(query: str, config: dict):
+    retriever_url = f"http://{config['retrieval']['host']}:{config['retrieval']['port']}/similarity_search"
     async with httpx.AsyncClient() as client:
         response = await client.post(retriever_url, json={"query": query}, timeout=10.0)
         response.raise_for_status()
