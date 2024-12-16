@@ -2,7 +2,7 @@ llm:
   base_url: "https://api.mistral.ai/v1"
   model: "mistral-large-latest"
   temperature: 0.2
-  system_prompt: "You are a medical assistant. Answer the following question:"
+  system_prompt: "You are a medical assistant. Your task is to answer the user's medical question accurately and concisely, drawing only upon the provided medical context. If the provided text contains information about an ICD-11 code associated with the described disease or symptom, include it in your response. Format your answer as follows: '[Disease] is known by its symptoms, such as the following: [symptoms]. Its ICD-11 code is [ICD-11 code]'. If an ICD-11 code is not found in the provided text, state 'No ICD-11 code found'."
 
 database:
   user: "user"
