@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
+# from langchain.vectorstores import FAISS
 from sqlalchemy import create_engine, text
 import yaml
 import numpy as np
@@ -24,6 +25,14 @@ embeddings_model = SentenceTransformer(
     config_kwargs={"use_memory_efficient_attention": False, "unpad_inputs": False}
 )
 
+#TODO retrain to model above
+# embeddings_model_faiss = SentenceTransformer(
+#     'sentence-transformers/all-MiniLM-L6-v2',
+#     trust_remote_code=True,
+#     device="cpu",
+#     config_kwargs={"use_memory_efficient_attention": False, "unpad_inputs": False}
+# )
+
 # Database connection
 DATABASE_URL = f"postgresql://{config['database']['user']}:{config['database']['password']}@db:{config['database']['port']}/{config['database']['name']}"
 engine = create_engine(DATABASE_URL)
@@ -31,6 +40,34 @@ engine = create_engine(DATABASE_URL)
 # Input model for the query
 class Query(BaseModel):
     query: str
+
+# @app.post("/similarity_search_mkb")
+# async def similarity_search_mkb(query: Query):
+#     """
+#     Perform similarity search using SQLAlchemy and a custom cosine similarity query.
+#     """
+#     try:
+#         db_name = "C:\\Users\\User\\Documents\\rag\\RagAssistant\\retriever\\faiss_db"
+        
+#         # Build a Vectorstore to compute similarity
+#         # TODO migrate into SQL DB
+#         vector_store = FAISS.load_local(
+#             db_name, embeddings_model_faiss, allow_dangerous_deserialization=True
+#         )
+
+#         # Search for needed MKB Code
+#         results = vector_store.similarity_search(query.query)
+
+#         # Format the results
+#         formatted_results = [
+#             {"code": row.metadata['code'], "disease" : row.page_content}
+#             for row in results
+#         ]
+#         return formatted_results
+
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
 
 @app.post("/similarity_search")
 async def similarity_search(query: Query):

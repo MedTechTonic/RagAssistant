@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 def initialize_llm_client(config: dict):
     try:
         llm_client = OpenAI(
-            base_url=config["llm"]["base_url"], api_key=os.environ["API_KEY"]
+            base_url=config["llm"]["base_url"], api_key="M4VNqahzsJBIvlmmPoB7WmY3TTcEDzSz"
         )
         logger.info("LLM client initialized successfully.")
         return llm_client
@@ -31,6 +31,13 @@ async def retrieve_embeddings(query: str, config: dict):
         response.raise_for_status()
         return response.json()
 
+# async def retrieve_embeddings_mkb(query: list, config: dict):
+#     retriever_url = f"http://{config['retrieval']['host']}:{config['retrieval']['port']}/similarity_search_mkb"
+#     async with httpx.AsyncClient() as client:
+#         response = await client.post(retriever_url, json={"query": query}, timeout=10.0)
+#         response.raise_for_status()
+#         return response.json()
+    
 def insert_embeddings_from_parquet(file_path_parquet: str, file_path_npy: str, batch_size=1000):
     session = SessionLocal()
     try:
