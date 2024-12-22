@@ -78,7 +78,7 @@ async def query(payload: QueryPayload):
         hypothetical_document = "".join([chunk.choices[0].delta.content for chunk in hypothetical_response])
         logger.info(f"Hypothetical document generated: {hypothetical_document}")
 
-        context_json = await retrieve_embeddings(hypothetical_document, config)
+        context_json = await retrieve_embeddings(f"{hypothetical_document}\{query_text}", config)
         context = '\n'.join([content["content"] for content in context_json])
 
         logger.info(f"Context generated: {context}")
