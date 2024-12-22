@@ -67,14 +67,15 @@ async def query(payload: QueryPayload):
         hypothetical_response = llm.chat.completions.create(
             model=config["llm"]["model"],
             messages=[
-                {"role": "system", "content": "Generate a hypothetical document for this query."},
+                {"role": "system", "content": "Generate a short answer for given query, even if you don't know information about it"},
                 {"role": "user", "content": query_text},
             ],
             temperature=config["llm"]["temperature"],
-            max_tokens=200
+            max_tokens=200,
+            stream=True
         )
 
-        hypothetical_document = "".join([chunk.choices[0].message["content"] for chunk in hypothetical_response])
+        hypothetical_document = "".join([chunk.choices[0].delta.content for chunk in hypothetical_response])
         logger.info(f"Hypothetical document generated: {hypothetical_document}")
 
         context_json = await retrieve_embeddings(hypothetical_document, config)
@@ -86,7 +87,7 @@ async def query(payload: QueryPayload):
             model=config["llm"]["model"],
             messages=[
                 {"role": "system", "content": config["llm"]["system_prompt"]},
-                {"role": "user", "content": f"{context}\n{query}"},
+                {"role": "user", "content": f"{context}\n{query_text}"},
             ],
             temperature=config["llm"]["temperature"],
             stream=True,
