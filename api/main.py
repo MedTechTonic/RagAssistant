@@ -87,7 +87,7 @@ async def query(payload: QueryPayload):
             model=config["llm"]["model"],
             messages=[
                 {"role": "system", "content": config["llm"]["system_prompt"]},
-                {"role": "user", "content": f"{context}\n{query_text}"},
+                {"role": "user", "content": f"{context}\nQuestion: {query_text}"},
             ],
             temperature=config["llm"]["temperature"],
             stream=True,

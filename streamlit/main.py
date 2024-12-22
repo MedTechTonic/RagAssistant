@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-st.title("RAG System Web Interface")
+st.title("Med RAG")
 query_input = st.text_input("Enter your query:")
 if st.button("Submit"):
     if query_input:
