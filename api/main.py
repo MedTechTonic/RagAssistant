@@ -9,9 +9,7 @@ from utils import initialize_database, initialize_llm_client, retrieve_embedding
 from sqlalchemy.sql import text
 import os
 
-# Initialize the logger
 logger = logging.getLogger(__name__)
-# Load configuration settings from YAML file
 with open("config/config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
