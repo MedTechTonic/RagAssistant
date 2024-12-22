@@ -20,11 +20,11 @@ embedding_model:
   model_name: "dunzhang/stella_en_400M_v5"
   model_type: ""
   dimension: 1024
-  prefix_query: "query: {}"
+  prefix_query: "s2p_query"
   prefix_document: "passage: {}"
 
 retrieval:
-  top_k: 3
+  top_k: 4
   similarity_threshold: 0.75
   host: "retriever"
   port: 8001

@@ -39,7 +39,7 @@ async def similarity_search(query: Query):
     """
     try:
         # Encode the query to generate its embedding
-        query_embedding = embeddings_model.encode([query.query])[0]
+        query_embedding = embeddings_model.encode([query.query], prompt_name=config["embedding_model"]["prefix_query"])[0]
         
 
         # Build a SQL query to compute cosine similarity
