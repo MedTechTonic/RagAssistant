@@ -63,29 +63,44 @@ async def query(payload: QueryPayload):
         raise HTTPException(status_code=400, detail="Query parameter is required.")
 
     try:
-        # Retrieve embeddings based on query
-        context_json = await retrieve_embeddings(query_text, config)
+        # HYDE
+        hypothetical_response = llm.chat.completions.create(
+            model=config["llm"]["model"],
+            messages=[
+                {"role": "system", "content": "Generate a hypothetical document for this query."},
+                {"role": "user", "content": query_text},
+            ],
+            temperature=config["llm"]["temperature"],
+            max_tokens=200
+        )
+
+        hypothetical_document = "".join([chunk.choices[0].message["content"] for chunk in hypothetical_response])
+        logger.info(f"Hypothetical document generated: {hypothetical_document}")
+
+        context_json = await retrieve_embeddings(hypothetical_document, config)
         context = '\n'.join([content["content"] for content in context_json])
 
-        # Generate response from LLM
+        logger.info(f"Context generated: {context}")
+
         response = llm.chat.completions.create(
             model=config["llm"]["model"],
             messages=[
                 {"role": "system", "content": config["llm"]["system_prompt"]},
-                {"role": "user", "content": f"{context}\n{query_text}"},
+                {"role": "user", "content": f"{context}\n{query}"},
             ],
             temperature=config["llm"]["temperature"],
             stream=True,
         )
 
-        # Aggregate streamed response
         generated_response = ""
         for chunk in response:
             delta_content = chunk.choices[0].delta.content
             if delta_content:
                 generated_response += delta_content
+                
 
         return {"context": context, "response": generated_response}
+    
 
     except Exception as e:
         logger.error(f"An error occurred while processing the query: {e}")
