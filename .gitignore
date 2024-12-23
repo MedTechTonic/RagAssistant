@@ -168,3 +168,4 @@ cython_debug/
 #.idea/
 retriever/faiss_db/*
 notebooks/stella_en_400M_v5
+faiss_db/
