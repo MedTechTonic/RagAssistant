@@ -29,7 +29,7 @@ class Query(BaseModel):
 async def lifespan(app: FastAPI):
     try:
         logger.info("Starting data loading process.")
-        initialize_database()  # Pass config to load_data
+        initialize_database()
         logger.info("Data loading completed.")
     except Exception as e:
         logger.warning(f"Service starts without any data in the DB caused by: {e}")

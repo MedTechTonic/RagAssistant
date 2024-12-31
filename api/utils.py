@@ -41,7 +41,7 @@ async def retrieve_ner(chunks: str, config: dict):
 def insert_embeddings_from_parquet_icd(file_path_parquet: str, file_path_npy: str, batch_size=1000):
     session = SessionLocal()
     try:
-        if session.query(Document.id).first() is not None:
+        if session.query(ICDDocument.id).first() is not None:
             logger.info("Database already contains embeddings. Skipping insertion.")
             return
 
