@@ -50,9 +50,10 @@ async def query(query: Query):
         context_icd = await retrieve_icd(contex_ner, config)
 
         context = chunks + \
-                    "\nPossible code: " + \
+                    "\POSSIBLE CODE IN ICD-11: " + \
                         ', '.join([code["content"] for code in context_icd])
         
+        logger.info(f"Context:\n{context}")
         response = llm.chat.completions.create(
                 model=config["llm"]["model"],
                 messages=[
