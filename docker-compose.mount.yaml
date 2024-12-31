@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data:/docker-entrypoint-initdb.d
+    command: >
+      bash -c "apt-get update &&
+               apt-get install -y postgresql-17-pgvector &&
+               docker-entrypoint.sh postgres"
+
+  retriever:
+    restart: always
+    build: 
+      context: ./
+      dockerfile: ./retriever/Dockerfile
+    volumes:
+      - ./retriever:/app
+      - ./config:/app/config
+      - ./faiss_db:/app/faiss_db
+    command: >
+      sh -c "
+      until pg_isready -h db -p 5432; do
+        echo 'Waiting for Postgres...'
+        sleep 2
+      done &&
+      uvicorn retriever:app --host 0.0.0.0 --port 8001 --reload"
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+
+  api:
+    restart: always
+    build: 
+      context: ./
+      dockerfile: ./api/Dockerfile
+    command: >
+      sh -c "
+      until pg_isready -h db -p 5432; do
+        echo 'Waiting for Postgres...'
+        sleep 2
+      done &&
+      uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./api:/app
+      - ./data:/app/data
+      - ./config:/app/config
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  streamlit:
+    restart: always
+    build: 
+      context: ./
+      dockerfile: ./streamlit/Dockerfile
+    command: >
+      sh -c "
+      until pg_isready -h db -p 5432; do
+        echo 'Waiting for Postgres...'
+        sleep 2
+      done &&
+      streamlit run app.py --server.address=0.0.0.0 --server.port=8501"
+    volumes:
+      - ./streamlit:/app
+      - ./config:/app/config
+    env_file:
+      - .env
+    ports:
+      - "8501:8501"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 def initialize_llm_client(config: dict):
     try:
         llm_client = OpenAI(
-            base_url=config["llm"]["base_url"], api_key=os.environ["API_KEY"]
+            base_url=config["llm"]["base_url"], api_key="0ZQ7qwDBzcpNlujFViFWjdN2WHSEkIva"
         )
         logger.info("LLM client initialized successfully.")
         return llm_client
@@ -27,10 +27,17 @@ def initialize_llm_client(config: dict):
 async def retrieve_embeddings(query: str, config: dict):
     retriever_url = f"http://{config['retrieval']['host']}:{config['retrieval']['port']}/similarity_search"
     async with httpx.AsyncClient() as client:
-        response = await client.post(retriever_url, json={"query": query}, timeout=10.0)
+        response = await client.post(retriever_url, json={"query": query}, timeout=1000.0)
         response.raise_for_status()
         return response.json()
     
+async def retrieve_ner(chunks: str, config: dict):
+    retriever_url = f"http://{config['retrieval']['host']}:{config['retrieval']['port']}/search_ner"
+    async with httpx.AsyncClient() as client:
+        response = await client.post(retriever_url, json={"query": chunks}, timeout=1000.0)
+        response.raise_for_status()
+        return response.json()    
+     
 def insert_embeddings_from_parquet_icd(file_path_parquet: str, file_path_npy: str, batch_size=1000):
     session = SessionLocal()
     try:
@@ -67,6 +74,13 @@ def insert_embeddings_from_parquet_icd(file_path_parquet: str, file_path_npy: st
         session.close()
         logger.info("Session closed.")
 
+async def retrieve_icd(dis: str, config: dict):
+    retriever_url = f"http://{config['retrieval']['host']}:{config['retrieval']['port']}/similarity_search_icd"
+    async with httpx.AsyncClient() as client:
+        response = await client.post(retriever_url, json={"query": dis}, timeout=1000.0)
+        response.raise_for_status()
+        return response.json()
+    
 def insert_embeddings_from_parquet(file_path_parquet: str, file_path_npy: str, batch_size=1000):
     session = SessionLocal()
     try:
