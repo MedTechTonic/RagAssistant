@@ -25,7 +25,7 @@ embeddings_model = SentenceTransformer(
     config["embedding_model"]["model_name"],
     trust_remote_code=True,
     device="cpu",
-    config_kwargs={"use_memory_efficient_attention": False, "unpad_inputs": False},
+    #config_kwargs={"use_memory_efficient_attention": False, "unpad_inputs": False},
 )
 
 ner_model = config["ner_model"]["ner_name"]
@@ -115,19 +115,19 @@ async def search_ner(chunks: Query):
 
 
 @app.post("/similarity_search_icd")
-async def similarity_search_icd(dis: str):
+async def similarity_search_icd(dis: Query):
     """
     Perform similarity search in ICD-11
     """
     try:
         # Encode the query to generate its embedding
-        query_embedding = embeddings_model.encode([dis])[0]
+        query_embedding = embeddings_model.encode([dis.query])[0]
 
         # Build a SQL query to compute cosine similarity
         sql = text(
             f"""
             SELECT id, content, embedding <=> (:query_embedding)::vector AS similarity
-            FROM icddocument
+            FROM icd_documents
             ORDER BY similarity
             LIMIT :top_k;
         """

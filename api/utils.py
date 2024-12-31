@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 def initialize_llm_client(config: dict):
     try:
         llm_client = OpenAI(
-            base_url=config["llm"]["base_url"], api_key="0ZQ7qwDBzcpNlujFViFWjdN2WHSEkIva"
+            base_url=config["llm"]["base_url"], api_key=os.getenv("API_KEY")
         )
         logger.info("LLM client initialized successfully.")
         return llm_client

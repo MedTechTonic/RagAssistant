@@ -51,7 +51,7 @@ async def query(query: Query):
 
         context = chunks + \
                     "\nPossible code: " + \
-                        ', '.join([code["code"] for code in context_icd])
+                        ', '.join([code["content"] for code in context_icd])
         
         response = llm.chat.completions.create(
                 model=config["llm"]["model"],

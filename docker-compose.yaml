@@ -57,5 +57,24 @@ services:
     depends_on:
       - db
 
+  streamlit:
+    restart: always
+    build: 
+      context: ./
+      dockerfile: ./streamlit/Dockerfile
+    command: >
+      sh -c "
+      until pg_isready -h db -p 5432; do
+        echo 'Waiting for Postgres...'
+        sleep 2
+      done &&
+      streamlit run app.py --server.address=0.0.0.0 --server.port=8501"
+    env_file:
+      - .env
+    ports:
+      - "8501:8501"
+    depends_on:
+      - db
+
 volumes:
   postgres_data:

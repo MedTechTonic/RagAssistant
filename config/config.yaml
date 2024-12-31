@@ -17,7 +17,7 @@ server:
 
 embedding_model:
   batch_size: 16
-  model_name: "dunzhang/stella_en_400M_v5"
+  model_name: "Alibaba-NLP/gte-large-en-v1.5"
   model_type: ""
   dimension: 1024
   prefix_query: "query: {}"
