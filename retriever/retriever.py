@@ -115,19 +115,19 @@ async def search_ner(chunks: Query):
 
 
 @app.post("/similarity_search_icd")
-async def similarity_search_icd(dis: Query):
+async def similarity_search_icd(dis: str):
     """
     Perform similarity search in ICD-11
     """
     try:
         # Encode the query to generate its embedding
-        query_embedding = embeddings_model.encode([query.query])[0]
+        query_embedding = embeddings_model.encode([dis])[0]
 
         # Build a SQL query to compute cosine similarity
         sql = text(
             f"""
             SELECT id, content, embedding <=> (:query_embedding)::vector AS similarity
-            FROM documents
+            FROM icddocument
             ORDER BY similarity
             LIMIT :top_k;
         """
@@ -139,7 +139,7 @@ async def similarity_search_icd(dis: Query):
                 sql,
                 {
                     "query_embedding": query_embedding.tolist(),
-                    "top_k": config["retrieval"]["top_k"],
+                    "top_k": 1,
                 },
             ).fetchall()
 
