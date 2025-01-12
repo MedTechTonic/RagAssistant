@@ -77,7 +77,6 @@ async def similarity_search(query: Query):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
-
 @app.post("/search_ner")
 async def search_ner(chunks: Query):
     """
@@ -116,30 +115,37 @@ async def search_ner(chunks: Query):
 
 
 @app.post("/similarity_search_icd")
-async def similarity_search_icd(dis: Query):
+async def similarity_search_icd(dis: str):
     """
     Perform similarity search in ICD-11
     """
     try:
-        db_name = "/app/faiss_db"
+        # Encode the query to generate its embedding
+        query_embedding = embeddings_model.encode([dis])[0]
 
-        # loading previously saved faiss index to compute similarity search
-        vector_icd = FAISS.load_local(
-            db_name, embeddings_model, allow_dangerous_deserialization=True
+        # Build a SQL query to compute cosine similarity
+        sql = text(
+            f"""
+            SELECT id, content, embedding <=> (:query_embedding)::vector AS similarity
+            FROM icddocument
+            ORDER BY similarity
+            LIMIT :top_k;
+        """
         )
 
-        # Search for needed ICD-11 Code
-        query_embedding = embeddings_model.encode(dis.query)
-
-        res = vector_icd.similarity_search_with_score_by_vector(query_embedding, k=1)
-        results_icd = [r for r, _ in res]
+        # Execute the query
+        with engine.connect() as connection:
+            results = connection.execute(
+                sql,
+                {
+                    "query_embedding": query_embedding.tolist(),
+                    "top_k": 1,
+                },
+            ).fetchall()
 
         # Format the results
-        formatted_results_end = [
-            {"code": row.metadata["code"], "disease": row.page_content}
-            for row in results_icd
-        ]
-        return formatted_results_end
+        formatted_results_start = [{"content": row[1]} for row in results]
+        return formatted_results_start
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
